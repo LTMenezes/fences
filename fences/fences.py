@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from rich import inspect
 from flask import Flask, send_from_directory
+import re
 
 load_dotenv("local.env")
 
@@ -18,7 +19,9 @@ openapi_link = input("Insert your openapi spec link:")
 parsed_spec = None
 with console.status("[bold green]Interpreting spec...") as status:
   parsed_spec = agent.interpret_spec(openapi_link).content[0].text
+  parsed_spec = re.search(r'```mermaid((.|\n)*)```',parsed_spec).groups()[0]
   inspect(parsed_spec)
+
 
 @app.route("/graph")
 def get_graph():
@@ -30,3 +33,4 @@ def index():
 
 if __name__ == "__main__":
   app.run()
+  

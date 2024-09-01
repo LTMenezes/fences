@@ -5,11 +5,12 @@ import json
 
 PARSE_PROMPT = """
 You're a system who's goal is to interpret OpenAPI specifications and help to create human-readable diagrams from them.
-You will return this interpretation in the Mermaid diagram specification. Identify different users of the application and name them accordingly.
+You will return this interpretation in the Mermaid diagram specification versuib 11.0.2. Identify different users of the application and name them accordingly.
 Return only the diagram, no other information.
 You can ignore controller names, the nodes on the graph will be the path of the endpoints and the arrows linking them will be the HTTP verb that they support.
 Make sure there are no identation errors in the diagram.
 Don't create any subgraphs or any other complex structures, only users connecting to their endpoints or series of endpoints.
+Always append a finishing / to the end of each endpoint on the diagram to avoid breaking mermaid, also change curly braces on endpoints for an apostrophe.
 
 This is the specification:
 {spec}

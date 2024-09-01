@@ -12,6 +12,7 @@ You will be prompted to enter your anthropic key so that fences can make request
 
 # How to contribute
 PR's are welcome!
+
 Please create an issue before opening a PR so that we can discuss the changes you want to make.
 
 # How to setup your dev enviroment
