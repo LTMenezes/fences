@@ -5,11 +5,14 @@ import os
 from dotenv import load_dotenv
 from rich import inspect
 from flask import Flask, send_from_directory
+from flask_cors import CORS, cross_origin
 import re
 
 load_dotenv("local.env")
 
 app = Flask(__name__, static_url_path="/static/", static_folder="../ui/build/static")
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 console = Console()
 agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
@@ -24,6 +27,7 @@ with console.status("[bold green]Interpreting spec...") as status:
 
 
 @app.route("/graph")
+@cross_origin()
 def get_graph():
   return parsed_spec
 
@@ -33,4 +37,3 @@ def index():
 
 if __name__ == "__main__":
   app.run()
-  
