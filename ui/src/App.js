@@ -1,26 +1,27 @@
-import 'beautiful-react-diagrams/styles.css';
-import React, { useState, useEffect } from 'react';
-import Diagram, { useSchema, createSchema } from 'beautiful-react-diagrams';
+import './App.css'
+import React, { useState, useEffect, Children } from 'react';
+import { useSchema, createSchema } from 'beautiful-react-diagrams';
 import mermaid from 'mermaid';
+import ParentSize from '@visx/responsive/lib/components/ParentSize';
+import {Diagram} from './Diagram.js';
 
 
-const cleanupText = (code) => {
-  return (
-    code
-      // parser problems on CRLF ignore all CR and leave LF;;
-      .replace(/\r\n?/g, '\n')
-      // clean up html tags so that all attributes use single quotes, parser throws error on double quotes
-      .replace(
-        /<(\w+)([^>]*)>/g,
-        (match, tag, attributes) => '<' + tag + attributes.replace(/="([^"]*)"/g, "='$1'") + '>'
-      )
-  );
-};
+var traverseTree = function(node, targetName) {
+  if(node !== undefined && node.name === targetName){
+    return node;
+  }
+
+  for (var cki in node.children) {
+      const res = traverseTree(node.children[cki], targetName);
+      if (res)
+        return res
+  }
+}
 
 function App() {
   const [spec, setSpec] = useState(null);
-  const [diagram, setDiagram] = useState(null);
-  const [schema, { onChange, addNode, removeNode, connect }] = useSchema(createSchema({}));
+  const [tree, setTree] = useState({});
+
 
   useEffect(() => {
     console.log('fetching spec');
@@ -37,8 +38,8 @@ function App() {
     if(spec == null)
       return;
 
-    let nodes = []
-    let links = []
+
+    let tempTree = {name: 'root', children: []}
 
     const buildGraph = async () => {
       // We always need to call parse before to reset config, mermaid public api is not built to support this use case.
@@ -51,17 +52,25 @@ function App() {
       const vertices = parser.getVertices();
       const edges = parser.getEdges();
 
-      let curX = 250;
-      for (const vertex of vertices) {
-        const y = vertex[0][0] === '/' ? 120 : 60;
-        const x = curX + 50;
-        curX += 50; 
-        addNode({ id: vertex[0], content: vertex[0], coordinates: [x, y], })
-      }
       for (const link of edges) {
-        connect(link.start, link.end)
+        console.log('comecando busca ', tempTree, link.start)
+        const parent = traverseTree(tempTree, link.start)
+        if(parent !== undefined) {
+          console.log('encontrei')
+          parent.children.push({name: link.end, children: []})
+        } else {
+          tempTree.children.push({
+            name: link.start,
+            children: [
+              {
+                name: link.end,
+                children: [],
+              }
+            ]
+          })
+        }
       }
-
+      setTree(tempTree)
       //useSchema(createSchema({nodes: nodes, links: links}))
     }
     
@@ -69,11 +78,9 @@ function App() {
   }, [spec]);
 
   return (
-    <div className="App">
+    <div className="App" style={{ height: "80vh" }}>
       <h1>fences</h1>
-      <div style={{ height: '22.5rem' }}>
-        <Diagram schema={schema} onChange={onChange} />
-      </div>
+      <ParentSize>{({ width, height }) => <Diagram width={width} height={height} data={tree} />}</ParentSize>,1
     </div>
   );
 }
