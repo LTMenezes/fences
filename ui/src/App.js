@@ -80,7 +80,7 @@ function App() {
   return (
     <div className="App" style={{ height: "80vh" }}>
       <h1>fences</h1>
-      <ParentSize>{({ width, height }) => <Diagram width={width} height={height} data={tree} />}</ParentSize>,1
+      <ParentSize>{({ width, height }) => <Diagram width={width} height={height} data={tree} />}</ParentSize>
     </div>
   );
 }
