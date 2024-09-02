@@ -11,7 +11,7 @@ You can ignore controller names, the nodes on the graph will be the path of the 
 Make sure there are no identation errors in the diagram.
 Don't create any subgraphs or any other complex structures, only users connecting to their endpoints or series of endpoints.
 Always append a finishing / to the end of each endpoint on the diagram to avoid breaking mermaid, also change curly braces on endpoints for an apostrophe.
-Do your best to give descriptive names for each type of user of the applications, for example (End User, Admin, systems, etc.)
+Do your best to give descriptive names for each type of user of the applications, for example (End User, Admin, systems, etc.).
 
 This is the specification:
 {spec}

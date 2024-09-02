@@ -23,6 +23,7 @@ interface DiagramProps {
   height: number;
   margin?: Margin;
   data: NodeData;
+  setSelectedEndpoint: (endpointId: string) => void;
 }
 
 const defaultMargin: Margin = { top: 30, left: 200, right: 200, bottom: 70 };
@@ -32,6 +33,7 @@ export const Diagram: FC<DiagramProps> = ({
   height: totalHeight,
   margin = defaultMargin,
   data,
+  setSelectedEndpoint,
 }) => {
   const forceUpdate = useForceUpdate();
 
@@ -101,6 +103,8 @@ export const Diagram: FC<DiagramProps> = ({
                             node.data.isExpanded = !node.data.isExpanded;
                             console.log(node);
                             forceUpdate();
+                            if (node.data.name[0] === '/') 
+                              setSelectedEndpoint(node.data.name)
                           }}
                         />
                       )}

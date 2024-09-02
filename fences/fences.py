@@ -21,7 +21,7 @@ openapi_link = "http://localhost:8080/v3/api-docs"#input("Insert your openapi sp
 
 parsed_info = None
 with console.status("[bold green]Interpreting spec...") as status:
-  parsed_info = agent.interpret_spec(openapi_link)#.content[0].text
+  parsed_info = agent.interpret_spec(openapi_link)
   diagram = parsed_info['diagram'].content[0].text
   parsed_info['diagram'] = re.search(r'```mermaid((.|\n)*)```',diagram).groups()[0]
   inspect(parsed_info)

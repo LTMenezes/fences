@@ -4,6 +4,14 @@ import mermaid from 'mermaid';
 import ParentSize from '@visx/responsive/lib/components/ParentSize';
 import { Diagram } from './Diagram.tsx';
 import { Textarea } from "./components/ui/textarea"
+import { Label } from "./components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./components/ui/select"
 import {
   Menubar,
   MenubarContent,
@@ -55,13 +63,48 @@ const traverseTree = (node: TreeNode, targetName: string): TreeNode | undefined 
   return undefined;
 };
 
+function findMatchingSpec(spec: any, endpointName: string): any {
+  var reversedEndpointName = '';
+  var open = false;
+  for (let i = 0; i < endpointName.length -1; ++i) {
+    if (endpointName[i] === '\'') {
+      reversedEndpointName += open ? '}' : '{';
+      open = !open;
+      continue;
+    }
+    reversedEndpointName += endpointName[i];
+  }
+  
+  var res = undefined;
+  Object.keys(spec['spec']['paths']).forEach((path: any) => {
+    if (path === reversedEndpointName) {
+      console.log('found', spec['spec']['paths'][path]);
+      res = [spec['spec']['paths'][path], path];
+    }
+  });
+
+  return res;
+}
+
+function parseSpec(spec: any): any {
+  var supportedVerbs = Object.keys(spec[0]);
+
+  return {
+    'spec': spec[0],
+    'verbs': supportedVerbs,
+    'path': spec[1],
+  }
+}
+
+
 const App: FC = () => {
   const [spec, setSpec] = useState<string | null>(null);
   const [info, setInfo] = useState<any | null>(null);
   const [tree, setTree] = useState<TreeNode>({ name: 'root', children: [], isExpanded: false });
+  const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
+  const [selectedEndpointSpec, setSelectedEndpointSpec] = useState<any | null>(null);
 
   useEffect(() => {
-    console.log('fetching spec');
     fetch('http://localhost:5000/info')
       .then((response) => response.json())
       .then((json) => {
@@ -70,6 +113,12 @@ const App: FC = () => {
       })
       .catch((error) => console.error(error));
   }, []);
+
+  useEffect(() => { 
+    if(selectedEndpoint===null) return;
+    var temp = findMatchingSpec(info, selectedEndpoint);
+    setSelectedEndpointSpec(parseSpec(temp));
+  }, [selectedEndpoint, info]);
 
   useEffect(() => {
     if (spec == null) return;
@@ -86,10 +135,8 @@ const App: FC = () => {
       const edges = parser_yy.getEdges();
 
       for (const link of edges) {
-        console.log('comecando busca ', tempTree, link.start);
         const parent = traverseTree(tempTree, link.start);
         if (parent !== undefined) {
-          console.log('encontrei');
           parent.children.push({ name: link.end, children: [], isExpanded: false });
         } else {
           tempTree.children.push({
@@ -105,8 +152,6 @@ const App: FC = () => {
           });
         }
       }
-      console.log(tempTree);
-
       setTree(tempTree);
     };
 
@@ -178,7 +223,7 @@ const App: FC = () => {
                 </CardHeader>
                 <CardContent>
                   {/* todo: fix this parentsize */}
-                  <ParentSize>{({ width, height }) => <Diagram width={1000} height={1000} data={tree} />}</ParentSize>
+                  <ParentSize>{({ width, height }) => <Diagram width={1000} height={1000} data={tree} setSelectedEndpoint={setSelectedEndpoint}/>}</ParentSize>
                 </CardContent>
               </Card>
             </div>
@@ -196,10 +241,26 @@ const App: FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    <Badge variant="outline">POST</Badge>
-                    <p className="font-medium">Request Body</p>
-                    <Textarea />
-                    <Button>Send Request</Button>
+                    {
+                      (selectedEndpoint && selectedEndpointSpec)?
+                      <>
+                      <Badge>{selectedEndpointSpec['path']}</Badge>
+                      {/* todo: fix this, we need to completly change the select instance, the select/defaul value bugs out when we change endpoints */}
+                      <Select defaultValue={selectedEndpointSpec['verbs'][0]}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an http verb" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedEndpointSpec['verbs'].map((el: string) => <SelectItem key={el} value={el}>{el.toUpperCase()}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="font-medium">Request Body</p>
+                      <Textarea />
+                      {/* <p>{JSON.stringify(selectedEndpointSpec)}</p> */}
+                      <Button>Send Request</Button>
+                      </> :
+                      <Label>Click an endpoint to select it.</Label>
+                    }
                   </div>
                 </CardContent>
               </Card>
@@ -217,6 +278,7 @@ const App: FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
+                  <Label>No data collected yet.</Label>
                 </CardContent>
               </Card>
             </div>
