@@ -11,6 +11,7 @@ You can ignore controller names, the nodes on the graph will be the path of the 
 Make sure there are no identation errors in the diagram.
 Don't create any subgraphs or any other complex structures, only users connecting to their endpoints or series of endpoints.
 Always append a finishing / to the end of each endpoint on the diagram to avoid breaking mermaid, also change curly braces on endpoints for an apostrophe.
+Do your best to give descriptive names for each type of user of the applications, for example (End User, Admin, systems, etc.)
 
 This is the specification:
 {spec}
@@ -27,9 +28,14 @@ class Agent():
 
   def interpret_spec(self, spec_link):
     self.cur_spec = self.fetch_spec(spec_link)
-    res = self.llm_request(PARSE_PROMPT.format(spec=self.cur_spec))
-    print(res)
-    return res
+    diagram = self.llm_request(PARSE_PROMPT.format(spec=self.cur_spec))
+
+    return {
+      'title': self.cur_spec['info']['title'],
+      'diagram': diagram,
+      'server': self.cur_spec['servers'][0]['url'],
+      'spec': self.cur_spec,
+    }
 
   def fetch_spec(self, spec_link):
     try:

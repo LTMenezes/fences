@@ -1,6 +1,5 @@
 import './App.css'
-import React, { useState, useEffect, Children } from 'react';
-import { useSchema, createSchema } from 'beautiful-react-diagrams';
+import React, { useState, useEffect } from 'react';
 import mermaid from 'mermaid';
 import ParentSize from '@visx/responsive/lib/components/ParentSize';
 import {Diagram} from './Diagram.js';
@@ -25,11 +24,10 @@ function App() {
 
   useEffect(() => {
     console.log('fetching spec');
-    fetch('http://localhost:5000/graph')
-      .then(response => response.text())
-      .then(text => {
-        console.log('received spec', text)
-        setSpec(text)
+    fetch('http://localhost:5000/info')
+      .then(response => response.json())
+      .then(json => {
+        setSpec(json['diagram'])
       })
       .catch(error => console.error(error));
   }, []);
@@ -71,7 +69,6 @@ function App() {
         }
       }
       setTree(tempTree)
-      //useSchema(createSchema({nodes: nodes, links: links}))
     }
     
     buildGraph()

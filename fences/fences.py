@@ -17,19 +17,19 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 console = Console()
 agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-openapi_link = input("Insert your openapi spec link:")
+openapi_link = "http://localhost:8080/v3/api-docs"#input("Insert your openapi spec link:")
 
-parsed_spec = None
+parsed_info = None
 with console.status("[bold green]Interpreting spec...") as status:
-  parsed_spec = agent.interpret_spec(openapi_link).content[0].text
-  parsed_spec = re.search(r'```mermaid((.|\n)*)```',parsed_spec).groups()[0]
-  inspect(parsed_spec)
+  parsed_info = agent.interpret_spec(openapi_link)#.content[0].text
+  diagram = parsed_info['diagram'].content[0].text
+  parsed_info['diagram'] = re.search(r'```mermaid((.|\n)*)```',diagram).groups()[0]
+  inspect(parsed_info)
 
-
-@app.route("/graph")
+@app.route("/info")
 @cross_origin()
 def get_graph():
-  return parsed_spec
+  return parsed_info
 
 @app.route("/")
 def index():
