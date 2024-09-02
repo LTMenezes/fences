@@ -1,29 +1,46 @@
-import React, { useState } from 'react';
+import React, { FC } from 'react';
 import { Group } from '@visx/group';
 import { hierarchy, Tree } from '@visx/hierarchy';
 import { LinearGradient } from '@visx/gradient';
 import useForceUpdate from './useForceUpdate';
-import {
-  LinkHorizontalStep,
-} from '@visx/shape';
+import { LinkHorizontalStep } from '@visx/shape';
 
+interface Margin {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+}
 
-const defaultMargin = { top: 30, left: 200, right: 200, bottom: 70 };
+interface NodeData {
+  name: string;
+  isExpanded: boolean;
+  children?: NodeData[];
+}
 
-export function Diagram({
+interface DiagramProps {
+  width: number;
+  height: number;
+  margin?: Margin;
+  data: NodeData;
+}
+
+const defaultMargin: Margin = { top: 30, left: 200, right: 200, bottom: 70 };
+
+export const Diagram: FC<DiagramProps> = ({
   width: totalWidth,
   height: totalHeight,
   margin = defaultMargin,
   data,
-}) {
+}) => {
   const forceUpdate = useForceUpdate();
 
-  const innerWidth = totalWidth - margin.left - margin.right;
-  const innerHeight = totalHeight - margin.top - margin.bottom;
+  const innerWidth: number = totalWidth - margin.left - margin.right;
+  const innerHeight: number = totalHeight - margin.top - margin.bottom;
 
   let origin = { x: 0, y: 0 };
 
-  const LinkComponent = LinkHorizontalStep
+  const LinkComponent = LinkHorizontalStep;
 
   return totalWidth < 10 ? null : (
     <div>
@@ -43,17 +60,17 @@ export function Diagram({
                     data={link}
                     percent={0.5}
                     stroke="rgb(254,110,158,0.6)"
-                    strokeWidth="5"
+                    strokeWidth={5}
                     fill="none"
                   />
                 ))}
 
                 {tree.descendants().map((node, key) => {
-                  const width = 240;
-                  const height = 40;
+                  const width: number = 240;
+                  const height: number = 40;
 
-                  let top = node.x;
-                  let left = node.y;
+                  let top: number = node.x;
+                  let left: number = node.y;
 
                   return (
                     <Group top={top} left={left} key={key}>
