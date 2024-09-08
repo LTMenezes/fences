@@ -24,7 +24,7 @@ flask.cli.show_server_banner = lambda *args: None
 console = Console()
 agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-openapi_link = "http://localhost:8080/v3/api-docs"#"http://localhost:8000/openapi.json"#"http://localhost:8080/v3/api-docs"#input("Insert your openapi spec link:")
+openapi_link = input("Insert your openapi spec link:")
 
 parsed_info = None
 with console.status("[bold green]Interpreting spec...") as status:
