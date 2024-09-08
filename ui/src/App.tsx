@@ -1,17 +1,19 @@
 import './App.css';
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect, FC, useRef } from 'react';
 import mermaid from 'mermaid';
 import ParentSize from '@visx/responsive/lib/components/ParentSize';
 import { Diagram } from './Diagram.tsx';
 import { Textarea } from "./components/ui/textarea"
 import { Label } from "./components/ui/label"
+import { LoadingSpinner } from "./components/ui/loading-spinner.tsx"
+
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./components/ui/select"
+} from "./components/ui/select.tsx"
 import {
   Menubar,
   MenubarContent,
@@ -21,7 +23,7 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "./components/ui/menubar.tsx"
-import { FrameIcon, HamburgerMenuIcon } from "@radix-ui/react-icons"
+import { FrameIcon, HamburgerMenuIcon, MagicWandIcon } from "@radix-ui/react-icons"
 
 import { Button } from "./components/ui/button"
 import {
@@ -103,6 +105,37 @@ const App: FC = () => {
   const [tree, setTree] = useState<TreeNode>({ name: 'root', children: [], isExpanded: false });
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
   const [selectedEndpointSpec, setSelectedEndpointSpec] = useState<any | null>(null);
+  const [selectedHTTPVerb, setSelectHTTPVerb] = useState<string | undefined>(undefined);
+  const [AIGeneratedBody, setAIGeneratedBody] = useState<string | null>(null);
+  const [requestBody, setRequestBody] = useState<string>("");
+  const [isAIBodyLoading, setIsAIBodyLoading] = useState<boolean>(false);
+  const requestBodyTextArea = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (requestBodyTextArea.current) {
+      requestBodyTextArea.current.style.height = 'auto';
+      requestBodyTextArea.current.style.height = `${requestBodyTextArea.current.scrollHeight}px`;
+    }
+  }, [requestBody]);
+
+  function requestAIBody() {
+    setIsAIBodyLoading(true)
+    fetch('http://localhost:5000/generate-request-body', {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body:  JSON.stringify({path:  selectedEndpoint, method: selectedHTTPVerb})
+      })
+    .then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+      setAIGeneratedBody(json['suggest_body']);
+      setIsAIBodyLoading(false)
+    })
+    .catch((error) => console.error(error));
+  }
 
   useEffect(() => {
     fetch('http://localhost:5000/info')
@@ -116,9 +149,21 @@ const App: FC = () => {
 
   useEffect(() => { 
     if(selectedEndpoint===null) return;
+
+    // Clean up
+    setRequestBody("");
+    setAIGeneratedBody(null);
+
     var temp = findMatchingSpec(info, selectedEndpoint);
-    setSelectedEndpointSpec(parseSpec(temp));
+    const parsedSpec = parseSpec(temp);
+    setSelectedEndpointSpec(parsedSpec);
+    setSelectHTTPVerb(parsedSpec['verbs'][0])
   }, [selectedEndpoint, info]);
+
+  useEffect(() => { 
+    if(AIGeneratedBody===null) return;
+    setRequestBody(JSON.stringify(JSON.parse(AIGeneratedBody), null, "\t"))
+  }, [AIGeneratedBody]);
 
   useEffect(() => {
     if (spec == null) return;
@@ -246,7 +291,7 @@ const App: FC = () => {
                       <>
                       <Badge>{selectedEndpointSpec['path']}</Badge>
                       {/* todo: fix this, we need to completly change the select instance, the select/defaul value bugs out when we change endpoints */}
-                      <Select defaultValue={selectedEndpointSpec['verbs'][0]}>
+                      <Select onValueChange={(value)=> setSelectHTTPVerb(value)} value={selectedHTTPVerb}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select an http verb" />
                         </SelectTrigger>
@@ -255,8 +300,27 @@ const App: FC = () => {
                         </SelectContent>
                       </Select>
                       <p className="font-medium">Request Body</p>
-                      <Textarea />
+
+                      {isAIBodyLoading ? 
+                        <div className="flex justify-center items-center h-[200px]">
+                          <LoadingSpinner />
+                        </div>
+                      : 
+                        <Textarea 
+                          value={requestBody} 
+                          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+                            setRequestBody(event.target.value);
+                            event.target.style.height = 'auto';
+                            event.target.style.height = `${event.target.scrollHeight}px`;
+                          }}
+                          className="min-h-[100px] overflow-hidden"
+                          style={{ resize: 'none' }}
+                          ref={requestBodyTextArea}
+                        />
+                      }
+                      
                       {/* <p>{JSON.stringify(selectedEndpointSpec)}</p> */}
+                      <Button onClick={() => requestAIBody()}>AI-Generate body <MagicWandIcon /></Button>
                       <Button>Send Request</Button>
                       </> :
                       <Label>Click an endpoint to select it.</Label>

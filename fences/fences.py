@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from rich import inspect
 from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
+from flask import request
 import re
 
 load_dotenv("local.env")
@@ -34,6 +35,14 @@ def get_graph():
 @app.route("/")
 def index():
   return send_from_directory('../ui/build/', 'index.html')
+
+@app.route("/generate-request-body", methods=["POST"])
+@cross_origin()
+def generate_request_body():
+  data = request.json
+  path = data['path']
+  method = data['method'].upper()
+  return agent.generate_suggested_request(path, method)
 
 if __name__ == "__main__":
   app.run()

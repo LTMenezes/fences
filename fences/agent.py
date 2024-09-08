@@ -17,6 +17,19 @@ This is the specification:
 {spec}
 """
 
+GENERATE_REQUEST_BODY_PROMPT = """
+You're a system who's goal is to automatically generate suggest request bodys given an OpenAPI specification and the desired HTTP verb.
+
+The target endpoint is '{path}' and the desired verb is: '{method}'.
+Try your best to fill the values of this body with information that makes sense given the specifications, name of the fields, the endpoint name and the expected output.
+All the keys need to be included even if it's just with a placeholder value in cases you are not sure about the value.
+
+This is the specification:
+{spec}
+
+What should be the request body for this request?
+Return only the the minified json body, no other information and no formating is needed.
+"""
 
 class Agent():
   def __init__(self, api_key):
@@ -33,7 +46,7 @@ class Agent():
     return {
       'title': self.cur_spec['info']['title'],
       'diagram': diagram,
-      'server': self.cur_spec['servers'][0]['url'],
+      'server': self.cur_spec.get('servers', [])[0]['url'] if self.cur_spec.get('servers', None) else [],
       'spec': self.cur_spec,
     }
 
@@ -62,3 +75,12 @@ class Agent():
     )
     print(response)
     return response
+
+  def generate_suggested_request(self, path, method):
+    request_body = self.llm_request(GENERATE_REQUEST_BODY_PROMPT.format(path=path, method=method, spec=self.cur_spec))
+    print(request_body)
+    return {
+      'suggest_body': request_body.content[0].text,
+      'path': path,
+      'method': method,
+    }
