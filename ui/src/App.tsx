@@ -21,26 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select.tsx"
-import { FrameIcon, HamburgerMenuIcon, MagicWandIcon, CopyIcon } from "@radix-ui/react-icons"
+import { FrameIcon, HamburgerMenuIcon, MagicWandIcon, CopyIcon, TrashIcon } from "@radix-ui/react-icons"
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { Button } from "./components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,CardFooter,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "./components/ui/card"
-import { Checkbox } from "./components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./components/ui/dropdown-menu"
-import { Input } from "./components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "./components/ui/sheet"
 import { Badge } from "./components/ui/badge"
 import { useStatePersist } from 'use-state-persist';
@@ -229,7 +219,7 @@ const App: FC = () => {
       const parser_yy = parser.yy;
       console.log(parser_yy);
 
-      const vertices = parser_yy.getVertices();
+      //const vertices = parser_yy.getVertices();
       const edges = parser_yy.getEdges();
 
       for (const link of edges) {
@@ -293,8 +283,8 @@ const App: FC = () => {
         </Sheet>
       </header>
       <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
-        <div className="mx-auto grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
-          <div className="flex gap-2">
+        <div className="mx-auto grid w-full max-w-5xl items-start gap-6 md:grid-cols-[1fr_1fr_1fr] justify-center">
+          <div className="flex gap-2 justify-center">
             <div className='flex-1'>
               <Card
               className="xl:col-span-2" x-chunk="dashboard-01-chunk-4"
@@ -360,7 +350,7 @@ const App: FC = () => {
                             ref={requestBodyTextArea}
                           />
                         }
-                        <Button onClick={() => requestAIBody()}>AI-Generate body <MagicWandIcon /></Button>
+                        <Button onClick={() => requestAIBody()}>AI-Generate Body <MagicWandIcon /></Button>
                         </>
                       }
                                             
@@ -376,6 +366,7 @@ const App: FC = () => {
 
                     {(responseBody && !isRequestInTransit) &&
                       <>
+                        <CardTitle>Response:</CardTitle>
                         <Textarea 
                             value={responseBody} 
                             className="min-h-[100px] max-h-[500px]"
@@ -397,6 +388,7 @@ const App: FC = () => {
                     <CardTitle>Data collected</CardTitle>
                     <CardDescription>
                       These are the data we collected from requests/responses you made. AI might use them to help you make future requests.
+                      Right-click to interact with them.
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -417,7 +409,7 @@ const App: FC = () => {
                           <CopyToClipboard text={JSON.stringify(value)}>
                             <ContextMenuItem> <CopyIcon/>Copy data</ContextMenuItem>
                           </CopyToClipboard>
-                          <ContextMenuItem onClick={() => removeCachedItem(value.id)}>Delete</ContextMenuItem>
+                          <ContextMenuItem onClick={() => removeCachedItem(value.id)}> <TrashIcon/>Delete</ContextMenuItem>
                         </ContextMenuContent>
                       </ContextMenu>
                       })
