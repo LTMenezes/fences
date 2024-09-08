@@ -42,11 +42,12 @@ class Agent():
   def interpret_spec(self, spec_link):
     self.cur_spec = self.fetch_spec(spec_link)
     diagram = self.llm_request(PARSE_PROMPT.format(spec=self.cur_spec))
-
+    self.servers = self.cur_spec.get('servers', []) if self.cur_spec.get('servers', None) else []
+    self.target_server = self.servers[0]['url'] if len(self.servers)!= 0 else None
     return {
       'title': self.cur_spec['info']['title'],
       'diagram': diagram,
-      'server': self.cur_spec.get('servers', [])[0]['url'] if self.cur_spec.get('servers', None) else [],
+      'server': self.servers,
       'spec': self.cur_spec,
     }
 
@@ -73,14 +74,34 @@ class Agent():
         }],
         max_tokens=2048
     )
-    print(response)
     return response
 
   def generate_suggested_request(self, path, method):
     request_body = self.llm_request(GENERATE_REQUEST_BODY_PROMPT.format(path=path, method=method, spec=self.cur_spec))
-    print(request_body)
     return {
       'suggest_body': request_body.content[0].text,
       'path': path,
       'method': method,
     }
+
+  def send_request(self, path, method, body):
+    try:
+      print(f"Target server is { self.target_server + path} { method.upper()} { body}")
+
+      response = requests.request(
+        method=method.upper(),
+        headers={'Content-type': 'application/json', 'Accept': 'application/json'},
+        # TODO: Currently removing the last empty slash that was artificially added to not break mermaid
+        url=self.target_server + path[:-1],
+        data=body
+      )
+      
+      if response.status_code == 200:
+          res = json.loads(response.text)
+          return res
+      else:
+          print(f"Failed to perform request: {response.status_code}")
+          return None
+    except requests.exceptions.RequestException as e:
+      print(f"An error occurred while performing request: {e}")
+      raise e

@@ -44,5 +44,17 @@ def generate_request_body():
   method = data['method'].upper()
   return agent.generate_suggested_request(path, method)
 
+@app.route("/send-request", methods=["POST"])
+@cross_origin()
+def send_request():
+  data = request.json
+  print(data)
+  path = data['path']
+  method = data['method'].upper()
+  body = data['body']
+
+  return agent.send_request(path, method, body)
+
+
 if __name__ == "__main__":
   app.run()

@@ -108,8 +108,11 @@ const App: FC = () => {
   const [selectedHTTPVerb, setSelectHTTPVerb] = useState<string | undefined>(undefined);
   const [AIGeneratedBody, setAIGeneratedBody] = useState<string | null>(null);
   const [requestBody, setRequestBody] = useState<string>("");
+  const [responseBody, setResponseBody] = useState<any | undefined>(undefined);
   const [isAIBodyLoading, setIsAIBodyLoading] = useState<boolean>(false);
+  const [isRequestInTransit, setIsRequestInTransit] = useState<boolean>(false);
   const requestBodyTextArea = useRef<HTMLTextAreaElement>(null);
+  const responseBodyTextArea = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (requestBodyTextArea.current) {
@@ -117,6 +120,35 @@ const App: FC = () => {
       requestBodyTextArea.current.style.height = `${requestBodyTextArea.current.scrollHeight}px`;
     }
   }, [requestBody]);
+
+  useEffect(() => {
+    if (responseBodyTextArea.current) {
+      responseBodyTextArea.current.style.height = 'auto';
+      responseBodyTextArea.current.style.height = `${responseBodyTextArea.current.scrollHeight}px`;
+    }
+  }, [responseBody]);
+
+  function sendRequest() {
+    setIsRequestInTransit(true);
+    fetch('http://localhost:5000/send-request', {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body:  JSON.stringify({path:  selectedEndpoint, method: selectedHTTPVerb, body: requestBody})
+      })
+    .then((response) => response.json())
+    .then((json) => {
+      setResponseBody(JSON.stringify(json, null, "\t"));
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+    .finally(() => {
+      setIsRequestInTransit(false)
+    });
+  }
 
   function requestAIBody() {
     setIsAIBodyLoading(true)
@@ -132,9 +164,13 @@ const App: FC = () => {
     .then((json) => {
       console.log(json);
       setAIGeneratedBody(json['suggest_body']);
-      setIsAIBodyLoading(false)
     })
-    .catch((error) => console.error(error));
+    .catch((error) => {
+      console.error(error)
+    })
+    .finally(() => {
+      setIsAIBodyLoading(false)
+    });
   }
 
   useEffect(() => {
@@ -153,6 +189,7 @@ const App: FC = () => {
     // Clean up
     setRequestBody("");
     setAIGeneratedBody(null);
+    setResponseBody(undefined)
 
     var temp = findMatchingSpec(info, selectedEndpoint);
     const parsedSpec = parseSpec(temp);
@@ -299,31 +336,50 @@ const App: FC = () => {
                           {selectedEndpointSpec['verbs'].map((el: string) => <SelectItem key={el} value={el}>{el.toUpperCase()}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <p className="font-medium">Request Body</p>
 
-                      {isAIBodyLoading ? 
-                        <div className="flex justify-center items-center h-[200px]">
-                          <LoadingSpinner />
-                        </div>
-                      : 
-                        <Textarea 
-                          value={requestBody} 
-                          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
-                            setRequestBody(event.target.value);
-                            event.target.style.height = 'auto';
-                            event.target.style.height = `${event.target.scrollHeight}px`;
-                          }}
-                          className="min-h-[100px] overflow-hidden"
-                          style={{ resize: 'none' }}
-                          ref={requestBodyTextArea}
-                        />
+                      {selectedHTTPVerb?.toUpperCase() !== "GET" && <>
+                        <p className="font-medium">Request Body</p>
+
+                        {isAIBodyLoading ? 
+                          <div className="flex justify-center items-center h-[200px]">
+                            <LoadingSpinner />
+                          </div>
+                        : 
+                          <Textarea 
+                            value={requestBody} 
+                            onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+                              setRequestBody(event.target.value);
+                              event.target.style.height = 'auto';
+                              event.target.style.height = `${event.target.scrollHeight}px`;
+                            }}
+                            className="min-h-[100px] overflow-hidden"
+                            style={{ resize: 'none' }}
+                            ref={requestBodyTextArea}
+                          />
+                        }
+                        <Button onClick={() => requestAIBody()}>AI-Generate body <MagicWandIcon /></Button>
+                        </>
                       }
-                      
-                      {/* <p>{JSON.stringify(selectedEndpointSpec)}</p> */}
-                      <Button onClick={() => requestAIBody()}>AI-Generate body <MagicWandIcon /></Button>
-                      <Button>Send Request</Button>
+                                            
+                      <Button onClick={() => sendRequest()}>Send Request</Button>
                       </> :
                       <Label>Click an endpoint to select it.</Label>
+                    }
+                    {isRequestInTransit &&
+                      <div className="flex justify-center items-center h-[200px]">
+                        <LoadingSpinner />
+                      </div>
+                    }
+
+                    {(responseBody && !isRequestInTransit) &&
+                      <>
+                        <Textarea 
+                            value={responseBody} 
+                            className="min-h-[100px] max-h-[500px]"
+                            style={{ resize: 'none' }}
+                            ref={responseBodyTextArea}
+                          />
+                      </>
                     }
                   </div>
                 </CardContent>
