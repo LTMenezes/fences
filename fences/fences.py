@@ -8,6 +8,8 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
 from flask import request
 import re
+import logging
+import flask.cli
 
 load_dotenv("local.env")
 
@@ -15,17 +17,22 @@ app = Flask(__name__, static_url_path="/static/", static_folder="../ui/build/sta
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+flask.cli.show_server_banner = lambda *args: None
+
 console = Console()
 agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-openapi_link = "http://localhost:8080/v3/api-docs"#input("Insert your openapi spec link:")
+openapi_link = "http://localhost:8080/v3/api-docs"#"http://localhost:8000/openapi.json"#"http://localhost:8080/v3/api-docs"#input("Insert your openapi spec link:")
 
 parsed_info = None
 with console.status("[bold green]Interpreting spec...") as status:
   parsed_info = agent.interpret_spec(openapi_link)
   diagram = parsed_info['diagram'].content[0].text
   parsed_info['diagram'] = re.search(r'```mermaid((.|\n)*)```',diagram).groups()[0]
-  inspect(parsed_info)
+
+console.print(":white_check_mark: OpenAPI Specification successfully parsed.")
 
 @app.route("/info")
 @cross_origin()
@@ -48,7 +55,6 @@ def generate_request_body():
 @cross_origin()
 def send_request():
   data = request.json
-  print(data)
   path = data['path']
   method = data['method'].upper()
   body = data['body']
@@ -57,4 +63,6 @@ def send_request():
 
 
 if __name__ == "__main__":
-  app.run()
+  with console.status("[bold green]Running server") as status:
+    console.print("You can reach it on: http://localhost:5000")
+    app.run(debug=False, port=5000)

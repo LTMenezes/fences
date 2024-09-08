@@ -33,7 +33,6 @@ Return only the the minified json body, no other information and no formating is
 
 class Agent():
   def __init__(self, api_key):
-    print(api_key)
     self.initialize_agent(api_key)
 
   def initialize_agent(self, api_key):
@@ -86,8 +85,6 @@ class Agent():
 
   def send_request(self, path, method, body):
     try:
-      print(f"Target server is { self.target_server + path} { method.upper()} { body}")
-
       response = requests.request(
         method=method.upper(),
         headers={'Content-type': 'application/json', 'Accept': 'application/json'},
