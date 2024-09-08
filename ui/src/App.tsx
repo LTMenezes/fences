@@ -21,15 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select.tsx"
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarTrigger,
-} from "./components/ui/menubar.tsx"
 import { FrameIcon, HamburgerMenuIcon, MagicWandIcon, CopyIcon } from "@radix-ui/react-icons"
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { Button } from "./components/ui/button"
@@ -269,19 +260,13 @@ const App: FC = () => {
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <a
-              href="/"
-              className="flex items-center gap-2 text-lg font-semibold md:text-base"
-            >
+          <>
               <FrameIcon className="h-6 w-6" />
               <span className="sr-only">Fences</span>
-            </a>
-            <a
-              href="/"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
+            </>
+            <>
               {info ? info['title'] : 'Loading...'}
-            </a>
+            </>
         </nav>
         <Sheet>
           <SheetTrigger asChild>
@@ -296,19 +281,13 @@ const App: FC = () => {
           </SheetTrigger>
           <SheetContent side="left">
             <nav className="grid gap-6 text-lg font-medium">
-              <a
-                href="#"
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
+              <>
                 <HamburgerMenuIcon className="h-6 w-6" />
                 <span className="sr-only">Fences</span>
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
+              </>
+              <>
                 {info ? info['title'] : 'Loading...'}
-              </a>
+              </>
             </nav>
           </SheetContent>
         </Sheet>
@@ -352,7 +331,6 @@ const App: FC = () => {
                       (selectedEndpoint && selectedEndpointSpec)?
                       <>
                       <Badge>{selectedEndpointSpec['path']}</Badge>
-                      {/* todo: fix this, we need to completly change the select instance, the select/defaul value bugs out when we change endpoints */}
                       <Select onValueChange={(value)=> setSelectHTTPVerb(value)} value={selectedHTTPVerb}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select an http verb" />
@@ -424,23 +402,18 @@ const App: FC = () => {
                 </CardHeader>
                 <CardContent>
                   {cacheData.length !== 0 ? <>
-                    {/* <p> {JSON.stringify(cacheData)}</p> */}
                     {
                       cacheData.map((value) => {
                         return <ContextMenu>
                         <ContextMenuTrigger>
-                          <Card>
-                            <CardTitle>{value.request.path}
-
-                            <p className="text-sm text-muted-foreground">
-                                <TimeAgo date={value.timestamp} />
-                              </p>
+                          <Card className="mb-2 min-w-[200px] min-h-[40px] flex flex-col justify-center">
+                            <CardTitle className="flex justify-between items-center">
+                              <span>{value.request.path}</span>
+                              <span className="text-sm text-muted-foreground"> <TimeAgo date={value.timestamp} /></span>
                             </CardTitle>
                           </Card>
                         </ContextMenuTrigger>
                         <ContextMenuContent>
-                          {/* TODO: Add actions */}
-                          
                           <CopyToClipboard text={JSON.stringify(value)}>
                             <ContextMenuItem> <CopyIcon/>Copy data</ContextMenuItem>
                           </CopyToClipboard>
