@@ -6,6 +6,13 @@ import { Diagram } from './Diagram.tsx';
 import { Textarea } from "./components/ui/textarea"
 import { Label } from "./components/ui/label"
 import { LoadingSpinner } from "./components/ui/loading-spinner.tsx"
+import TimeAgo from 'react-timeago'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "./components/ui/context-menu"
 
 import {
   Select,
@@ -23,14 +30,13 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "./components/ui/menubar.tsx"
-import { FrameIcon, HamburgerMenuIcon, MagicWandIcon } from "@radix-ui/react-icons"
-
+import { FrameIcon, HamburgerMenuIcon, MagicWandIcon, CopyIcon } from "@radix-ui/react-icons"
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { Button } from "./components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
+  CardDescription,CardFooter,
   CardHeader,
   CardTitle,
 } from "./components/ui/card"
@@ -46,11 +52,20 @@ import {
 import { Input } from "./components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "./components/ui/sheet"
 import { Badge } from "./components/ui/badge"
+import { useStatePersist } from 'use-state-persist';
+import { v4 as uuid } from 'uuid'
 
 interface TreeNode {
   name: string;
   children: TreeNode[];
   isExpanded: boolean;
+}
+
+interface CachedRequest {
+  request: any;
+  response: any;
+  timestamp: number;
+  id: string;
 }
 
 const traverseTree = (node: TreeNode, targetName: string): TreeNode | undefined => {
@@ -113,6 +128,7 @@ const App: FC = () => {
   const [isRequestInTransit, setIsRequestInTransit] = useState<boolean>(false);
   const requestBodyTextArea = useRef<HTMLTextAreaElement>(null);
   const responseBodyTextArea = useRef<HTMLTextAreaElement>(null);
+  const [cacheData, setCachedData] = useStatePersist<CachedRequest[]>("@cachedData", [])
 
   useEffect(() => {
     if (requestBodyTextArea.current) {
@@ -130,17 +146,21 @@ const App: FC = () => {
 
   function sendRequest() {
     setIsRequestInTransit(true);
+    const request_data = {path:  selectedEndpoint, method: selectedHTTPVerb, body: requestBody}
     fetch('http://localhost:5000/send-request', {
       method: "POST",
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json'
       },
-      body:  JSON.stringify({path:  selectedEndpoint, method: selectedHTTPVerb, body: requestBody})
+      body:  JSON.stringify(request_data)
       })
     .then((response) => response.json())
     .then((json) => {
       setResponseBody(JSON.stringify(json, null, "\t"));
+      const updatedCacheData = cacheData;
+      updatedCacheData.push({'request': request_data, 'response': json, 'timestamp': Date.now(), 'id': uuid()})
+      setCachedData(updatedCacheData)
     })
     .catch((error) => {
       console.error(error)
@@ -171,6 +191,11 @@ const App: FC = () => {
     .finally(() => {
       setIsAIBodyLoading(false)
     });
+  }
+
+  function removeCachedItem(id: string) {
+    const updatedCacheData = cacheData.filter(item => item.id !== id);
+    setCachedData(updatedCacheData);
   }
 
   useEffect(() => {
@@ -398,7 +423,34 @@ const App: FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Label>No data collected yet.</Label>
+                  {cacheData.length !== 0 ? <>
+                    {/* <p> {JSON.stringify(cacheData)}</p> */}
+                    {
+                      cacheData.map((value) => {
+                        return <ContextMenu>
+                        <ContextMenuTrigger>
+                          <Card>
+                            <CardTitle>{value.request.path}
+
+                            <p className="text-sm text-muted-foreground">
+                                <TimeAgo date={value.timestamp} />
+                              </p>
+                            </CardTitle>
+                          </Card>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          {/* TODO: Add actions */}
+                          
+                          <CopyToClipboard text={JSON.stringify(value)}>
+                            <ContextMenuItem> <CopyIcon/>Copy data</ContextMenuItem>
+                          </CopyToClipboard>
+                          <ContextMenuItem onClick={() => removeCachedItem(value.id)}>Delete</ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                      })
+                    }</>:
+                    <Label>No data collected yet.</Label>
+                  }
                 </CardContent>
               </Card>
             </div>
