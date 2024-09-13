@@ -20,20 +20,29 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 flask.cli.show_server_banner = lambda *args: None
 
-anthropic_key = input("Enter your anthropic api key:")
-
 console = Console()
-agent = Agent(api_key=anthropic_key)
 
-openapi_link = input("Enter your openapi spec link:")
+def initialize_agent():
+    api_choice = console.input("Do you want to use OpenAI or Anthropic? (openai/anthropic): ").lower()
+    
+    if api_choice not in ['openai', 'anthropic']:
+        console.print("[bold red]Invalid choice. Please choose 'openai' or 'anthropic'.[/bold red]")
+        return initialize_agent()
+    
+    api_key = console.input(f"Enter your {api_choice.capitalize()} API key: ")
+    return Agent(api_choice, api_key)
 
-parsed_info = None
+agent = initialize_agent()
+
+openapi_link = console.input("Enter your openapi spec link: ")
 with console.status("[bold green]Interpreting spec...") as status:
-  parsed_info = agent.interpret_spec(openapi_link)
-  diagram = parsed_info['diagram'].content[0].text
-  parsed_info['diagram'] = re.search(r'```mermaid((.|\n)*)```',diagram).groups()[0]
+    parsed_info = agent.interpret_spec(openapi_link)
+    diagram = parsed_info['diagram']
+    parsed_info['diagram'] = diagram.strip()
 
 console.print(":white_check_mark: OpenAPI Specification successfully parsed.")
+console.print("Mermaid Diagram:")
+console.print(parsed_info['diagram'])
 
 @app.route("/info")
 @cross_origin()

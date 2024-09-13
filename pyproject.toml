@@ -79,7 +79,9 @@ dependencies = [
     "tqdm>=4.66.4",
     "typing_extensions>=4.12.2",
     "urllib3>=2.2.2",
-    "Werkzeug>=3.0.4"
+    "Werkzeug>=3.0.4",
+    "python-dotenv>=1.0.1",
+    "openai>=1.45.0",
 ]
 license = {text = "MIT"}
 
