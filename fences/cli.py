@@ -1,6 +1,6 @@
 from rich.console import Console
 import time
-from agent import Agent
+from fences.agent import Agent
 import os
 from dotenv import load_dotenv
 from rich import inspect
@@ -20,10 +20,10 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 flask.cli.show_server_banner = lambda *args: None
 
-openapi_link = input("Enter your anthropic api key:")
+anthropic_key = input("Enter your anthropic api key:")
 
 console = Console()
-agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+agent = Agent(api_key=anthropic_key)
 
 openapi_link = input("Enter your openapi spec link:")
 
