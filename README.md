@@ -16,7 +16,7 @@ Please submit an issue with a reproducible example if you encounter any problems
 # Usage
 ```sh
 pip install fences-api # Installation command
-fences LINK_TO_THE_OPENAPI_SPEC
+fences # You will be prompted for an anthropic api key and for the link to the openapi spec
 ```
 
 You will be prompted to enter your anthropic key so that fences can make requests to an LLM model to parse the OpenAPI specification.
