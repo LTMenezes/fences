@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "fences-api"
-dynamic = ["version", "dependencies"]
+dynamic = ["version"]
 description = "Fences is an LLM augmented OpenAPI interpreter with a visual interface to easily make requests"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -37,7 +37,6 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
-version = "0.1.0"
 dependencies = [
     "annotated-types>=0.7.0",
     "anthropic>=0.34.1",
