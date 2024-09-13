@@ -1,6 +1,5 @@
 import anthropic
 import openai
-import os
 import requests
 import json
 
@@ -39,18 +38,14 @@ Return only the the minified json body, no other information and no formating is
 """
 
 class Agent():
-    def __init__(self):
-        self.initialize_agent()
+    def __init__(self, api_type, api_key):
+        self.initialize_agent(api_type, api_key)
 
-    def initialize_agent(self):
-        api_choice = input("Do you want to use OpenAI or Anthropic? (openai/anthropic): ").lower()
-        
-        if api_choice == 'openai':
-            api_key = input("Enter your OpenAI API key: ")
+    def initialize_agent(self, api_type, api_key):
+        if api_type == 'openai':
             self.client = openai.OpenAI(api_key=api_key)
             self.api_type = 'openai'
-        elif api_choice == 'anthropic':
-            api_key = input("Enter your Anthropic API key: ")
+        elif api_type == 'anthropic':
             self.client = anthropic.Anthropic(api_key=api_key)
             self.api_type = 'anthropic'
         else:
@@ -76,10 +71,6 @@ class Agent():
         
         self.servers = self.cur_spec.get('servers', []) if self.cur_spec.get('servers', None) else []
         self.target_server = self.servers[0]['url'] if len(self.servers) != 0 else None
-        
-        # Print the cleaned diagram for debugging
-        print("Generated Mermaid Diagram:")
-        print(diagram)
         
         return {
             'title': self.cur_spec['info']['title'],
