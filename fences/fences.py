@@ -11,7 +11,6 @@ import re
 import logging
 import flask.cli
 
-load_dotenv("local.env")
 
 app = Flask(__name__, static_url_path="/static/", static_folder="../ui/build/static")
 cors = CORS(app)
@@ -21,10 +20,12 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 flask.cli.show_server_banner = lambda *args: None
 
+openapi_link = input("Enter your anthropic api key:")
+
 console = Console()
 agent = Agent(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-openapi_link = input("Insert your openapi spec link:")
+openapi_link = input("Enter your openapi spec link:")
 
 parsed_info = None
 with console.status("[bold green]Interpreting spec...") as status:
@@ -61,8 +62,10 @@ def send_request():
 
   return agent.send_request(path, method, body)
 
+def main():
+  with console.status("[bold green]Running server") as status:
+      console.print("You can reach it on: http://localhost:5000")
+      app.run(debug=False, port=5000)
 
 if __name__ == "__main__":
-  with console.status("[bold green]Running server") as status:
-    console.print("You can reach it on: http://localhost:5000")
-    app.run(debug=False, port=5000)
+  main()

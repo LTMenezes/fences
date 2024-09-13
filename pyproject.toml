@@ -1,0 +1,60 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "fences-api"
+dynamic = ["version", "dependencies"]
+description = "Fences is an LLM augmented OpenAPI interpreter with a visual interface to easily make requests"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Leonardo Menezes", email = "leonardotmenezes@gmail.com" },
+]
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+[project.urls]
+Homepage = "https://github.com/LTMenezes/fences"
+
+[project.scripts]
+fences = "fences.fences:main"
+
+[tool.pdm]
+version = { source = "file", path = "fences/__init__.py" }
+dependencies = {file = ["requirements.txt"]}
+distribution = true
+
+[tool.pdm.build]
+source-includes = [
+    "requirements*.txt",
+    ]
+
+
+[tool.inline-snapshot]
+# default-flags=["fix"]
+# default-flags=["create"]

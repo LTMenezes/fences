@@ -1,0 +1,26 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - fences-api
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v4
+      - uses: pdm-project/setup-pdm@v4
+      - name: Publish package distributions to PyPI
+        run: pdm publish
