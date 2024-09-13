@@ -31,5 +31,6 @@ Please create an issue before opening a PR so that we can discuss the changes yo
 ```sh
 pip install -r requirements.txt
 cd ui && npm install && npm run build && cd..
-python fences/fences.py
+python fences/cli.py
+pip install -e . # To test package locally
 ```
