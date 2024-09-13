@@ -1,4 +1,7 @@
 # Fences
+<a href="https://pypi.org/project/fences-api" target="_blank">
+  <img src="https://img.shields.io/pypi/v/fences-api?color=%2334D058&label=pypi%20package" alt="Package version">
+</a>
 
 An LLM augmented OpenAPI specification interpreter that provides a human-readable interactive representation of APIs, automatically generate requests and stores both requests and responses on your browser to improve AI-generated requests in future queries.
 
@@ -12,7 +15,7 @@ Please submit an issue with a reproducible example if you encounter any problems
 
 # Usage
 ```sh
-pip install fences # Installation command
+pip install fences-api # Installation command
 fences LINK_TO_THE_OPENAPI_SPEC
 ```
 
